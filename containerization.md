@@ -12,32 +12,38 @@ Docker consists of a Dockerfile and Docker Compose.
 
 Dockerfiles are text documents that contain all the commands a user would call to assemble an image.
 
+```Dockerfile
+FROM python:3.8-alpine3.11
 
-  FROM python:3.8-alpine3.11
+# update apk repo
+RUN echo "http://dl-4.alpinelinux.org/alpine/v3.11/main" >> /etc/apk/repositories && \
+    echo "http://dl-4.alpinelinux.org/alpine/v3.11/community" >> /etc/apk/repositories
 
-  # update apk repo
-  RUN echo "http://dl-4.alpinelinux.org/alpine/v3.11/main" >> /etc/apk/repositories && \
-      echo "http://dl-4.alpinelinux.org/alpine/v3.11/community" >> /etc/apk/repositories
+# install chromedriver
+RUN apk --no-cache add chromium chromium-chromedriver
 
-  # install chromedriver
-  RUN apk --no-cache add chromium chromium-chromedriver
+# install selenium
+RUN pip install selenium pytest
+```
 
-  # install selenium
-  RUN pip install selenium pytest
+To build your image:
 
-
-  To build your image:
-
+```Shell
 docker build . -t <image-name>:<tag>
+```
 
-  To run your image:
+To run your image:
 
+```Shell
 docker run -it <image-name>:<tag> sh
+```
 
 To view information about active containers:
 
-  docker ps
-
+```Shell
+docker ps
+docker run -it <image-name>:<tag> sh
+```
 
 ## Docker Compose
 A Dockerfile will contain the core image used to construct the container base. However, your application will likely require other dependencies, environment variables, and specific settings to run.
@@ -52,17 +58,19 @@ An example docker-compose.yml file:
 
 #### docker-compose.yml
 
-  version: '3'
-  services:
-    web:
-      build: .
-      ports:
-        - "5000:5000"
-      volumes:
-        - .:/code
-      environment:
-        FLASK_ENV: development
-        REDIS_HOST: redis
-        REDIS_PORT: 6379
-    redis:
-      image: "redis:alpine"
+```YAML
+version: '3'
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/code
+    environment:
+      FLASK_ENV: development
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+  redis:
+    image: "redis:alpine"
+```
