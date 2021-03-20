@@ -38,11 +38,21 @@ To run your image:
 docker run -it <image-name>:<tag> sh
 ```
 
+- --name <name> to give your image a name
+- -d to run in detached mode
+- -p <3000:3000> to expose a port
+- 
 To view information about active containers:
 
 ```Shell
 docker ps
 docker run -it <image-name>:<tag> sh
+```
+
+To run a remote command in a docker container:
+
+```Shell
+docker exec <container-id> <shell cmd>
 ```
 
 ## Docker Compose
