@@ -17,3 +17,8 @@ greatly increasing the reproducibility and quality of code releases. Similar to 
 Unlike DevOps, DataOps is in its infancy. DataOps was originally introduced in 2014 by Lenny Liebmann in a blog post for InformationWeek. In contrast, DevOps has been around since the early 1990's. As a result, while testing automation is a major foundation of DevOps, [DataOps practitioners](https://s3.amazonaws.com/eckerson/content_assets/assets/000/000/195/original/DataOPS.pdf?1534882627) do not have the breadth of tools available to test data in analytic pipelines.
 
 # Testing business logic
+Testing in traditional software development and data warehousing validates data integrity.
+
+Analytics and data science pipelines also require that their end products meet business logic, can run in isolated environments, and integrate with existing infrastructure.
+
+This can be accomplished with functional tests. 
