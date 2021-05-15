@@ -12,11 +12,23 @@ class DriftTest():
     def test(self):
         pass
 
-    def test_mean(self):
-        pass
+    def test_mean(self, data):
+        return data.mean()
 
-    def test_median(self):
-        pass
+    def test_median(self, data):
+        return data.median()
 
-    def test_mean(self):
-        pass
+    def test_mean(self, data):
+        return data.mean()
+
+    def test_null(self, data):
+        return data.isnull().shape
+
+    def test_range(self, data):
+        return max(data), min(data)
+
+    def test_unique(self, data):
+        return data.duplicated()
+
+    def test_completeness(self, data):
+        return ( data.shape[0] - data.isnull().sum() ) / data.shape[0]
