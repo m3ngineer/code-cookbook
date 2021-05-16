@@ -7,10 +7,28 @@
 class DriftTest():
 
     def __init__(self):
-        pass
+        self.tests = {
+            'mean': self.test_mean(),
+            'median': self.test_median(),
+            'null': self.test_null(),
+            'range': self.test_range(),
+            'uniqueness': self.test_uniqueness(),
+            'completeness': self.test_completeness,
+        }
 
     def test(self):
         pass
+
+    def profile(self):
+        ''' Create a profile comparing 2 dataframes '''
+
+        result = pd.DataFrame()
+        stats = ['mean', 'median', 'null', 'range', 'uniqueness', 'completeness']
+        for stat in stats:
+            for i in range(0,1):
+                result.loc[stat, i] = self.tests[stat]
+
+        return result
 
     def test_mean(self, data):
         return data.mean()
