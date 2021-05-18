@@ -18,18 +18,29 @@ class DriftTest():
             'completeness': self.test_completeness,
         }
 
-    def test(self):
-        pass
-
     def profile(self, data):
         ''' Create a profile comparing 2 dataframes '''
 
-        result = pd.DataFrame()
+        result = pd.Series()
         stats = ['mean', 'median', 'null', 'min', 'max', 'uniqueness', 'completeness']
         for stat in stats:
-            for i in range(0,1):
-                print(stat, i)
-                result.loc[stat, i] = self.tests[stat](data)
+            result.loc[stat] = self.tests[stat](data)
+
+        return result
+
+    def compare(self, datasets, names=None):
+        '''
+        Generates comparison statistics for list of datasets
+        datasets :: list of dataframes
+        names :: list of strings
+        '''
+
+        result = pd.DataFrame(index=self.tests.keys())
+        kwargs = {}
+        for i, dataset in enumerate(datasets):
+            name = names[i] if names else 'data_{}'.format(i)
+            kwargs[name] = self.profile(dataset).values
+        result = result.assign(**kwargs)
 
         return result
 
@@ -57,6 +68,7 @@ class DriftTest():
     def test_completeness(self, data):
         return ( data.shape[0] - data.isnull().sum() ) / data.shape[0]
 
-data = pd.Series(list(range(1,10)))
+data1 = pd.Series(list(range(1,10)))
+data2 = pd.Series(list(range(1,12)) + [None])
 drift = DriftTest()
-print(drift.profile(data))
+print(drift.compare([data1, data2]))
