@@ -1,14 +1,20 @@
-# Automatically checks for changes in data upon code changes
+'''
 
-# Inputs: 2 dataframes for comparison. 1 dataframe could be the data used to train a model. The other is the current data used to make predictions
+Data Drift automatically checks for statistical differences in data upon code changes.
 
-# Ouput: A series of tests that dectect statistical differences and changes in the dataset
+Inputs: 2 dataframes for comparison. 1 dataframe could be the data used to train a model. The other is the current data used to make predictions
+Ouput: A series of tests that dectect statistical differences and changes in the dataset
+
+'''
+
 import pandas as pd
 
 class DriftTest():
 
     def __init__(self):
         self.tests = {
+            'shape_rows': self.test_shape_rows,
+            'shape_cols': self.test_shape_cols,
             'mean': self.test_mean,
             'median': self.test_median,
             'null': self.test_null,
@@ -21,8 +27,8 @@ class DriftTest():
     def profile(self, data):
         ''' Create a profile comparing 2 dataframes '''
 
-        result = pd.Series()
-        stats = ['mean', 'median', 'null', 'min', 'max', 'uniqueness', 'completeness']
+        result = pd.Series(dtype='float64')
+        stats = ['shape_rows', 'shape_cols', 'mean', 'median', 'null', 'min', 'max', 'uniqueness', 'completeness']
         for stat in stats:
             result.loc[stat] = self.tests[stat](data)
 
@@ -47,6 +53,14 @@ class DriftTest():
     def test_mean(self, data):
         return data.mean()
 
+    def test_shape_rows(self, data):
+        return data.shape[0]
+
+    def test_shape_cols(self, data):
+        if len(data.shape) > 1:
+            return data.shape[1]
+        return None
+
     def test_median(self, data):
         return data.median()
 
@@ -67,6 +81,9 @@ class DriftTest():
 
     def test_completeness(self, data):
         return ( data.shape[0] - data.isnull().sum() ) / data.shape[0]
+
+    def stat_ttest(self, data):
+        return
 
 data1 = pd.Series(list(range(1,10)))
 data2 = pd.Series(list(range(1,12)) + [None])
