@@ -5,9 +5,12 @@ Data Drift automatically checks for statistical differences in data upon code ch
 Inputs: 2 dataframes for comparison. 1 dataframe could be the data used to train a model. The other is the current data used to make predictions
 Ouput: A series of tests that dectect statistical differences and changes in the dataset
 
+ML partially substitutes the role of data stewards by flagging the data points based on probabilistic ratings as per learning from training set of past data steward decisions and categorizing duplicate, vacant, incorrect or suspicious entries. This reduces manual effort and governance activities.
+
 '''
 
 import pandas as pd
+from scipy.stats import ttest_ind
 
 class DriftTest():
 
@@ -34,7 +37,7 @@ class DriftTest():
 
         return result
 
-    def compare(self, datasets, names=None):
+    def compare(self, datasets, names=None, ttest=False):
         '''
         Generates comparison statistics for list of datasets
         datasets :: list of dataframes
@@ -47,6 +50,11 @@ class DriftTest():
             name = names[i] if names else 'data_{}'.format(i)
             kwargs[name] = self.profile(dataset).values
         result = result.assign(**kwargs)
+
+        if ttest:
+            for i, dataset in enumerate(datasets):
+                if i > 0:
+                    print('T-test statistic ({} vs {}): {}'.format(names[i-1], names[i], stat_ttest(dataset[i-1], dataset[i]))
 
         return result
 
@@ -82,8 +90,8 @@ class DriftTest():
     def test_completeness(self, data):
         return ( data.shape[0] - data.isnull().sum() ) / data.shape[0]
 
-    def stat_ttest(self, data):
-        return
+    def stat_ttest(self, data1, data2):
+        return ttest_ind(data1, data2, equal_var=False)
 
 data1 = pd.Series(list(range(1,10)))
 data2 = pd.Series(list(range(1,12)) + [None])
