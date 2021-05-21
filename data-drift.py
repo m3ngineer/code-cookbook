@@ -9,8 +9,10 @@ ML partially substitutes the role of data stewards by flagging the data points b
 
 '''
 
+import numpy as np
 import pandas as pd
 from scipy.stats import ttest_ind
+from itertools import combinations
 
 class DriftTest():
 
@@ -33,6 +35,8 @@ class DriftTest():
         result = pd.Series(dtype='float64')
         stats = ['shape_rows', 'shape_cols', 'mean', 'median', 'null', 'min', 'max', 'uniqueness', 'completeness']
         for stat in stats:
+            print(data.head())
+            print(data.shape)
             result.loc[stat] = self.tests[stat](data)
 
         return result
@@ -50,6 +54,10 @@ class DriftTest():
             name = names[i] if names else 'data_{}'.format(i)
             kwargs[name] = self.profile(dataset).values
         result = result.assign(**kwargs)
+
+        # Get matches for all combinations of datasets
+        for (dset1, dset2) in pairs:
+            result['match_{}-{}'.format(dset1,dset2)] = result[dset1].eq(result[dset2])
 
         if ttest:
             for i, dataset in enumerate(datasets):
@@ -70,36 +78,36 @@ class DriftTest():
         return None
 
     def test_median(self, data):
-        return data.median()
+        return data.median()[0]
 
     def test_mean(self, data):
-        return data.mean()
+        return data.mean()[0]
 
     def test_null(self, data):
         return data.isnull().shape[0]
 
     def test_max(self, data):
-        return max(data)
+        return data.max()[0]
 
     def test_min(self, data):
-        return min(data)
+        return data.min()[0]
 
     def test_uniqueness(self, data):
         return data.duplicated().shape[0]
 
     def test_completeness(self, data):
-        return ( data.shape[0] - data.isnull().sum() ) / data.shape[0]
+        return ( data.shape[0] - data.isnull().sum()[0] ) / data.shape[0]
 
     def stat_ttest(self, data1, data2):
         return ttest_ind(data1, data2, equal_var=False)
 
 data = pd.read_csv('../../Projects/xray-healthcare/data/Medicare_Provider_Utilization_and_Payment_Data__Physician_and_Other_Supplier_PUF_CY2017.csv', nrows=300000)
-# print(data.head())
 print(data.columns)
-print(data['Provider Type'].value_counts().head(30))
-heme_onc = data[data['Provider Type'] == 'Hematology-Oncology']
-data1 = pd.Series(list(range(1,10)))
-data2 = pd.Series(list(range(1,12)) + [None])
+data1 = data[data['Provider Type'] == 'Hematology-Oncology']
+data2 = data1[data1['Number of Medicare Beneficiaries'] > 15]
+
+# data1 = pd.Series(list(range(1,10)))
+# data2 = pd.Series(list(range(1,12)) + [None])
 drift = DriftTest()
 cols = ['HCPCS Drug Indicator', 'Number of Services',
        'Number of Medicare Beneficiaries',
@@ -107,4 +115,5 @@ cols = ['HCPCS Drug Indicator', 'Number of Services',
        'Average Medicare Allowed Amount', 'Average Submitted Charge Amount',
        'Average Medicare Payment Amount',
        'Average Medicare Standardized Amount']
-print(drift.compare([data[cols], heme_onc[cols]]))
+cols = ['Average Medicare Payment Amount']
+print(drift.compare([data1[cols], data2[cols]]))
