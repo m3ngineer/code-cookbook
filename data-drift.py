@@ -54,7 +54,7 @@ class DriftTest():
         if ttest:
             for i, dataset in enumerate(datasets):
                 if i > 0:
-                    print('T-test statistic ({} vs {}): {}'.format(names[i-1], names[i], stat_ttest(dataset[i-1], dataset[i]))
+                    print('T-test statistic ({} vs {}): {}'.format(names[i-1], names[i], stat_ttest(dataset[i-1], dataset[i])))
 
         return result
 
@@ -93,7 +93,18 @@ class DriftTest():
     def stat_ttest(self, data1, data2):
         return ttest_ind(data1, data2, equal_var=False)
 
+data = pd.read_csv('../../Projects/xray-healthcare/data/Medicare_Provider_Utilization_and_Payment_Data__Physician_and_Other_Supplier_PUF_CY2017.csv', nrows=300000)
+# print(data.head())
+print(data.columns)
+print(data['Provider Type'].value_counts().head(30))
+heme_onc = data[data['Provider Type'] == 'Hematology-Oncology']
 data1 = pd.Series(list(range(1,10)))
 data2 = pd.Series(list(range(1,12)) + [None])
 drift = DriftTest()
-print(drift.compare([data1, data2]))
+cols = ['HCPCS Drug Indicator', 'Number of Services',
+       'Number of Medicare Beneficiaries',
+       'Number of Distinct Medicare Beneficiary/Per Day Services',
+       'Average Medicare Allowed Amount', 'Average Submitted Charge Amount',
+       'Average Medicare Payment Amount',
+       'Average Medicare Standardized Amount']
+print(drift.compare([data[cols], heme_onc[cols]]))
