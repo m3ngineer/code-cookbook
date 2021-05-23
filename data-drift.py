@@ -72,6 +72,12 @@ class DriftTest():
     def test_shape_rows(self, data):
         return data.shape[0]
 
+    def test_columns(self, datal, datar):
+        ''' Returns unique columns for each dataset '''
+
+        return [col for col in datal.columns if col not in datar.columns], 
+            [col for col in datar.columns if col not in datal.columns]
+
     def test_shape_cols(self, data):
         if len(data.shape) > 1:
             return data.shape[1]
