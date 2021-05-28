@@ -82,7 +82,13 @@ class DriftTest():
         for (dset1, dset2) in pairs:
             # Get num columns unique to each dataset
 
-            print('Number of rows in {0} not in {1}'.format(datasets[0], datasets[1]))
+            merged_df = dset1.merge(dset2, indicator=True)
+            num_equal = (merged_df['_merged'] == 'both').sum()
+            num_left = (merged_df['_merged'] == 'left_only').sum()
+            num_right = (merged_df['_merged'] == 'right_only').sum()
+            print('Number of rows in both datsets: {}'.format(num_equal))
+            print('Number of rows in {0} not in {1}: '.format(dataset_names[0], dataset_names[1], num_left))
+            print('Number of rows in {1} not in {2}: '.format(dataset_names[1], dataset_names[0], num_right))
 
 
 
