@@ -52,11 +52,12 @@ class DriftTest():
         result = pd.DataFrame(index=self.tests.keys())
         kwargs = {}
         for i, dataset in enumerate(datasets):
-            kwargs[names[i]] = self.profile(dataset).values
+            kwargs[dataset_names[i]] = self.profile(dataset).values
         result = result.assign(**kwargs)
 
         # Get matches for all combinations of datasets
-        for (dset1, dset2) in pairs:
+        pairs = combinations(list(zip(dataset_names, datasets)), 2)
+        for ((dset1, dset1_name), (dset2, dset2_name)) in pairs:
             result['match_{}-{}'.format(dset1,dset2)] = result[dset1].eq(result[dset2])
 
         if ttest:
@@ -79,16 +80,17 @@ class DriftTest():
 
         print('Row discrepancies')
         print('----------')
-        for (dset1, dset2) in pairs:
+        pairs = combinations(list(zip(dataset_names, datasets)), 2)
+        for ((dset1, dset1_name), (dset2, dset2_name)) in pairs:
             # Get num columns unique to each dataset
 
             merged_df = dset1.merge(dset2, indicator=True)
             num_equal = (merged_df['_merged'] == 'both').sum()
             num_left = (merged_df['_merged'] == 'left_only').sum()
             num_right = (merged_df['_merged'] == 'right_only').sum()
-            print('Number of rows in both datsets: {}'.format(num_equal))
-            print('Number of rows in {0} not in {1}: '.format(dataset_names[0], dataset_names[1], num_left))
-            print('Number of rows in {1} not in {2}: '.format(dataset_names[1], dataset_names[0], num_right))
+            print('Number of rows in both datsets ({}, {}) {}'.format(dset1_name, dset2_name, num_equal))
+            print('Number of rows in {0} not in {1}: '.format(dset1_name, dset2_name, num_left))
+            print('Number of rows in {1} not in {2}: '.format(dset1_name, dset2_name, num_right))
 
 
 
@@ -101,8 +103,7 @@ class DriftTest():
     def test_columns(self, datal, datar):
         ''' Returns unique columns for each dataset '''
 
-        return [col for col in datal.columns if col not in datar.columns],
-            [col for col in datar.columns if col not in datal.columns]
+        return [col for col in datal.columns if col not in datar.columns], [col for col in datar.columns if col not in datal.columns]
 
     def test_shape_cols(self, data):
         if len(data.shape) > 1:
