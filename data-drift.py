@@ -35,13 +35,13 @@ class DriftTest():
         result = pd.Series(dtype='float64')
         stats = ['shape_rows', 'shape_cols', 'mean', 'median', 'null', 'min', 'max', 'uniqueness', 'completeness']
         for stat in stats:
-            print(data.head())
-            print(data.shape)
+            # print(data.head())
+            # print(data.shape)
             result.loc[stat] = self.tests[stat](data)
 
         return result
 
-    def compare(self, datasets, dataset_names=None, ttest=False, join_cols=[]):
+    def compare(self, datasets, dataset_names=None, ttest=False, compare_cols=[], join_cols=[]):
         '''
         Generates comparison statistics for list of datasets
         datasets :: list of dataframes
@@ -51,7 +51,10 @@ class DriftTest():
         dataset_names = dataset_names[i] if dataset_names else ['data_{}'.format(i) for i in range(len(datasets))]
         result = pd.DataFrame(index=self.tests.keys())
         kwargs = {}
+
         for i, dataset in enumerate(datasets):
+            if compare_cols:
+                dataset=dataset[compare_cols]
             kwargs[dataset_names[i]] = self.profile(dataset).values
         result = result.assign(**kwargs)
 
@@ -66,17 +69,25 @@ class DriftTest():
                     print('T-test statistic ({} vs {}): {}'.format(names[i-1], names[i], stat_ttest(dataset[i-1], dataset[i])))
 
         if join_cols:
-            self.find_col_differences(datasets, dataset_names, join_cols)
+            self.find_col_differences(datasets, dataset_names, join_cols, compare_cols=compare_cols)
 
         return result
 
-    def find_col_differences(datasets, dataset_names, join_cols):
+    def find_col_differences(self, datasets, dataset_names, join_cols, compare_cols=[]):
         ''' Finds rows unique to given datasets '''
 
         df = datasets[0].copy()
         for i in range(0, len(datasets)):
             if i > 0:
-                df = df.join(datasets[i], on=join_cols, how='outer')
+                if compare_cols:
+                    cols = join_cols + compare_cols
+                else:
+                    cols = join_cols
+                dset1 = df[cols]
+                dset2 = datasets[i][cols]
+                print(dset1.columns)
+                print(dset2.columns)
+                df = dset1.merge(dset2, on=join_cols, how='outer')
 
         print('Row discrepancies')
         print('----------')
@@ -91,8 +102,6 @@ class DriftTest():
             print('Number of rows in both datsets ({}, {}) {}'.format(dset1_name, dset2_name, num_equal))
             print('Number of rows in {0} not in {1}: '.format(dset1_name, dset2_name, num_left))
             print('Number of rows in {1} not in {2}: '.format(dset1_name, dset2_name, num_right))
-
-
 
     def test_mean(self, data):
         return data.mean()
@@ -148,5 +157,7 @@ cols = ['HCPCS Drug Indicator', 'Number of Services',
        'Average Medicare Allowed Amount', 'Average Submitted Charge Amount',
        'Average Medicare Payment Amount',
        'Average Medicare Standardized Amount']
-cols = ['Average Medicare Payment Amount']
-print(drift.compare([data1[cols], data2[cols]]))
+compare_cols = ['Average Medicare Payment Amount']
+join_cols=['National Provider Identifier', 'HCPCS Code']
+
+print(drift.compare([data1, data2], compare_cols=compare_cols, join_cols=join_cols))
