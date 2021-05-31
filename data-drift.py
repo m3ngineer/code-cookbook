@@ -92,16 +92,16 @@ class DriftTest():
         print('Row discrepancies')
         print('----------')
         pairs = combinations(list(zip(dataset_names, datasets)), 2)
-        for ((dset1, dset1_name), (dset2, dset2_name)) in pairs:
-            # Get num columns unique to each dataset
+        for ((dset1_name, dset1), (dset2_name, dset2)) in pairs:
 
+            # Get num columns unique to each dataset
             merged_df = dset1.merge(dset2, indicator=True)
-            num_equal = (merged_df['_merged'] == 'both').sum()
-            num_left = (merged_df['_merged'] == 'left_only').sum()
-            num_right = (merged_df['_merged'] == 'right_only').sum()
+            num_equal = (merged_df['_merge'] == 'both').sum()
+            num_left = (merged_df['_merge'] == 'left_only').sum()
+            num_right = (merged_df['_merge'] == 'right_only').sum()
             print('Number of rows in both datsets ({}, {}) {}'.format(dset1_name, dset2_name, num_equal))
-            print('Number of rows in {0} not in {1}: '.format(dset1_name, dset2_name, num_left))
-            print('Number of rows in {1} not in {2}: '.format(dset1_name, dset2_name, num_right))
+            print('Number of rows in {0} not in {1}: {2}'.format(dset1_name, dset2_name, num_left))
+            print('Number of rows in {1} not in {0}: {2}'.format(dset1_name, dset2_name, num_right))
 
     def test_mean(self, data):
         return data.mean()
