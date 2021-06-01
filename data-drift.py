@@ -48,7 +48,7 @@ class DriftTest():
         names :: list of strings
         '''
 
-        dataset_names = dataset_names[i] if dataset_names else ['data_{}'.format(i) for i in range(len(datasets))]
+        dataset_names = [dataset_names[i] if dataset_names else 'data_{}'.format(i) for i in range(len(datasets))]
         result = pd.DataFrame(index=self.tests.keys())
         kwargs = {}
 
@@ -160,4 +160,4 @@ cols = ['HCPCS Drug Indicator', 'Number of Services',
 compare_cols = ['Average Medicare Payment Amount']
 join_cols=['National Provider Identifier', 'HCPCS Code']
 
-print(drift.compare([data1, data2], compare_cols=compare_cols, join_cols=join_cols))
+print(drift.compare([data1, data2], dataset_names=['control', 'test'], compare_cols=compare_cols, join_cols=join_cols))
