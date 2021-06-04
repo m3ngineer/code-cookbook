@@ -89,7 +89,7 @@ class DriftTest():
                 print(dset2.columns)
                 df = dset1.merge(dset2, on=join_cols, how='outer')
 
-        print('Row discrepancies')
+        print('\nRow discrepancies')
         print('----------')
         pairs = combinations(list(zip(dataset_names, datasets)), 2)
         for ((dset1_name, dset1), (dset2_name, dset2)) in pairs:
@@ -103,17 +103,23 @@ class DriftTest():
             print('Number of rows in {0} not in {1}: {2}'.format(dset1_name, dset2_name, num_left))
             print('Number of rows in {1} not in {0}: {2}'.format(dset1_name, dset2_name, num_right))
 
-        print('Column discrepancies')
+        print('\nColumn discrepancies')
         print('----------')
+        pairs = combinations(list(zip(dataset_names, datasets)), 2)
         for ((dset1_name, dset1), (dset2_name, dset2)) in pairs:
 
             # Get num columns unique to each dataset
             num_equal = len([col for col in dset1.columns if col in dset2.columns])
-            num_left = len([col for col in dset1.columns if col not in dset2.columns])
-            num_right = len([col for col in dset2.columns if col not in dset1.columns])
+            uniq_lcols = [col for col in dset1.columns if col not in dset2.columns]
+            uniq_rcols = [col for col in dset2.columns if col not in dset1.columns]
             print('Number of columns in both datsets ({}, {}) {}'.format(dset1_name, dset2_name, num_equal))
-            print('Number of columns in {0} not in {1}: {2}'.format(dset1_name, dset2_name, num_left))
-            print('Number of columns in {1} not in {0}: {2}'.format(dset1_name, dset2_name, num_right))
+            print('Number of columns in {0} not in {1}: {2}'.format(dset1_name, dset2_name, len(uniq_lcols)))
+            print('Number of columns in {1} not in {0}: {2}'.format(dset1_name, dset2_name, len(uniq_rcols)))
+
+            if uniq_lcols:
+                print('Columns in {0} not in {1}: {2}'.format(dset1_name, dset2_name, uniq_lcols))
+            if uniq_rcols:
+                print('Columns in {1} not in {0}: {2}'.format(dset1_name, dset2_name, uniq_rcols))
 
     def test_mean(self, data):
         return data.mean()
